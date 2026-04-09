@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INSEAD · May – June 2026</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #fafafa;
+    --text: #1d1d1f;
+    --text-2: #6e6e73;
+    --text-3: #a1a1a6;
+    --border: rgba(0,0,0,0.08);
+    --border-2: rgba(0,0,0,0.04);
+    --hover: rgba(0,0,0,0.03);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000;
+      --surface: #1c1c1e;
+      --text: #f5f5f7;
+      --text-2: #98989d;
+      --text-3: #6e6e73;
+      --border: rgba(255,255,255,0.1);
+      --border-2: rgba(255,255,255,0.05);
+      --hover: rgba(255,255,255,0.04);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "kern", "liga", "tnum";
+  }
+  body {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 32px 80px;
+  }
+  header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-bottom: 20px;
+    border-bottom: 0.5px solid var(--border);
+    margin-bottom: 28px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .title {
+    font-size: 40px;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: var(--text-2);
+    margin-top: 6px;
+  }
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn:hover { background: var(--hover); }
+  .btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .view-switch { display: flex; gap: 2px; background: var(--surface); border: 0.5px solid var(--border); border-radius: 10px; padding: 2px; }
+  .view-switch .btn { border: none; background: transparent; border-radius: 8px; padding: 6px 12px; }
+  .view-switch .btn.active { background: var(--bg); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  @media (prefers-color-scheme: dark) {
+    .view-switch .btn.active { background: #2c2c2e; }
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin-bottom: 28px;
+    font-size: 12px;
+    color: var(--text-2);
+  }
+  .legend-item { display: flex; align-items: center; gap: 7px; cursor: pointer; padding: 4px 0; transition: opacity 0.15s; user-select: none; }
+  .legend-item:hover { opacity: 0.7; }
+  .legend-item.muted { opacity: 0.3; }
+  .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+  .week-section { margin-bottom: 36px; }
+  .week-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+  .day-header-row {
+    display: grid;
+    grid-template-columns: 52px repeat(7, minmax(0, 1fr));
+    border-bottom: 0.5px solid var(--border);
+  }
+  .day-head {
+    padding: 8px 10px 12px;
+    text-align: left;
+  }
+  .day-head.weekend { opacity: 0.5; }
+  .day-head.today .day-num { color: #fff; background: #ff3b30; }
+  .day-name {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .day-num {
+    font-size: 22px;
+    font-weight: 400;
+    margin-top: 2px;
+    display: inline-block;
+    min-width: 30px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    border-radius: 50%;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 52px repeat(7, minmax(0, 1fr));
+    position: relative;
+  }
+  .time-col {
+    position: relative;
+    border-right: 0.5px solid var(--border);
+  }
+  .time-label {
+    position: absolute;
+    right: 8px;
+    font-size: 10px;
+    color: var(--text-3);
+    transform: translateY(-50%);
+  }
+  .day-col {
+    position: relative;
+    border-right: 0.5px solid var(--border);
+    min-height: 100%;
+  }
+  .day-col.weekend { background: var(--border-2); }
+  .hour-line {
+    position: absolute;
+    left: 0; right: 0;
+    border-top: 0.5px solid var(--border-2);
+  }
+  .event {
+    position: absolute;
+    left: 3px; right: 3px;
+    padding: 4px 6px;
+    border-radius: 5px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.12s ease, filter 0.12s ease;
+    font-size: 10px;
+    line-height: 1.25;
+  }
+  .event:hover { transform: scale(1.015); filter: brightness(0.97); z-index: 5; }
+  .event .ev-title {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .event .ev-time {
+    font-size: 9px;
+    opacity: 0.75;
+    margin-top: 1px;
+  }
+  .event .ev-faculty {
+    font-size: 9px;
+    opacity: 0.65;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+  }
+  .event.hidden { display: none; }
+
+  /* Modal */
+  .modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .modal-bg.open { display: flex; opacity: 1; }
+  .modal {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    max-width: 420px;
+    width: calc(100% - 40px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    transform: scale(0.96);
+    transition: transform 0.2s;
+  }
+  .modal-bg.open .modal { transform: scale(1); }
+  .modal .course-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: middle; }
+  .modal h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 16px; }
+  .modal-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid var(--border-2); font-size: 14px; }
+  .modal-row:last-child { border-bottom: none; }
+  .modal-row .label { color: var(--text-2); }
+  .modal-row .val { font-weight: 500; text-align: right; }
+  .modal-close {
+    margin-top: 20px;
+    width: 100%;
+    padding: 10px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .modal-close:hover { background: var(--hover); }
+
+  /* Month view */
+  .month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border-top: 0.5px solid var(--border);
+    border-left: 0.5px solid var(--border);
+  }
+  .month-daylabel {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 8px 10px;
+    border-right: 0.5px solid var(--border);
+    border-bottom: 0.5px solid var(--border);
+    background: var(--surface);
+  }
+  .month-cell {
+    min-height: 110px;
+    padding: 8px;
+    border-right: 0.5px solid var(--border);
+    border-bottom: 0.5px solid var(--border);
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .month-cell.other { background: var(--surface); opacity: 0.5; }
+  .month-cell .mnum { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .month-cell .mnum.today { color: #fff; background: #ff3b30; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; }
+  .mini-event {
+    font-size: 10px;
+    padding: 2px 5px;
+    border-radius: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .mini-event:hover { filter: brightness(0.95); }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    body { padding: 24px 16px 60px; }
+    .title { font-size: 30px; }
+    .day-header-row, .grid { grid-template-columns: 40px repeat(7, minmax(0, 1fr)); }
+    .day-num { font-size: 18px; min-width: 26px; height: 26px; line-height: 26px; }
+    .day-name { font-size: 9px; }
+    .event { padding: 2px 4px; }
+    .event .ev-title { font-size: 9px; }
+    .event .ev-time, .event .ev-faculty { display: none; }
+    .month-cell { min-height: 70px; padding: 4px; }
+    .mini-event { font-size: 9px; padding: 1px 3px; }
+  }
+
+  footer {
+    margin-top: 50px;
+    padding-top: 20px;
+    border-top: 0.5px solid var(--border);
+    font-size: 11px;
+    color: var(--text-3);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="title">May – June 2026</div>
+    <div class="subtitle">INSEAD MBA · Section E7 · Fontainebleau</div>
+  </div>
+  <div class="controls">
+    <div class="view-switch">
+      <button class="btn active" data-view="week">Week</button>
+      <button class="btn" data-view="month">Month</button>
+    </div>
+  </div>
+</header>
+
+<div class="legend" id="legend"></div>
+
+<div id="calendar"></div>
+
+<footer>
+  82 sessions · 9 courses · Click any event for details · Click course dots to filter
+</footer>
+
+<div class="modal-bg" id="modal">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<script>
+const courses = {
+  Macro:  { name: "Macroeconomics in the Global Economy", short: "Macro",       color: "#0A84FF" },
+  Policy: { name: "Business & Society: Public Policy",     short: "Policy",      color: "#FF9F0A" },
+  Ethics: { name: "Business & Society: Ethics",            short: "Ethics",      color: "#BF5AF2" },
+  PolEnv: { name: "Business & Society: Political Env.",    short: "Pol. Env.",   color: "#FF375F" },
+  Invest: { name: "Investments & Asset Management",        short: "Investments", color: "#30D158" },
+  CI:     { name: "Customer Insight",                      short: "Cust. Ins.",  color: "#FF453A" },
+  ACF:    { name: "Applied Corporate Finance",             short: "ACF",         color: "#5E5CE6" },
+  Story:  { name: "Storytelling",                          short: "Storytelling",color: "#FF6482" },
+  AoC:    { name: "The Art of Communication",              short: "Art of Comm", color: "#64D2FF" }
+};
+
+const events = [
+  ["2026-05-04","14:00","15:30","Macro","Fatas Antonio","Amphi Rubeli","#1"],
+  ["2026-05-04","15:45","17:15","Policy","Roulet Alexandra","Amphi Rubeli","#1"],
+  ["2026-05-05","14:00","15:30","Invest","Belo Frederico","Amphi Rubeli","#1"],
+  ["2026-05-05","15:45","17:15","Macro","Fatas Antonio","Amphi Rubeli","#2"],
+  ["2026-05-05","17:30","19:00","Policy","Roulet Alexandra","Amphi Rubeli","#2"],
+  ["2026-05-06","14:00","15:30","CI","Carmon Ziv","Amphi Rubeli","#1"],
+  ["2026-05-06","15:45","17:15","CI","Carmon Ziv","Amphi Rubeli","#2"],
+  ["2026-05-07","12:00","13:30","CI","Carmon Ziv","Amphi deVitry","#3"],
+  ["2026-05-07","14:00","15:30","Invest","Belo Frederico","Amphi MBA70","#2"],
+  ["2026-05-07","15:45","17:15","Invest","Belo Frederico","Amphi MBA70","#3"],
+  ["2026-05-07","17:30","19:00","ACF","Peress Joël","Amphi Maag","#1"],
+  ["2026-05-08","08:30","10:00","Macro","Fatas Antonio","Amphi Rubeli","#3"],
+  ["2026-05-08","10:15","11:45","Policy","Roulet Alexandra","Amphi Rubeli","#3"],
+  ["2026-05-08","12:00","13:30","Story","Flaven G. / Le Menestrel M.","Amphi DeanBerry","#1"],
+  ["2026-05-09","09:00","18:00","AoC","Knight Stephen","Amphi Maag","Day 1"],
+  ["2026-05-10","08:30","18:00","AoC","Knight Stephen","Amphi Maag","Day 2"],
+  ["2026-05-11","08:30","10:00","Policy","Roulet Alexandra","Amphi Rubeli","#4"],
+  ["2026-05-11","10:15","11:45","Macro","Fatas Antonio","Amphi Rubeli","#4"],
+  ["2026-05-11","12:00","13:30","Ethics","Petriglieri Gianpiero","Amphi Rubeli","#1"],
+  ["2026-05-12","10:15","11:45","Invest","Belo Frederico","Amphi MBA70","#4"],
+  ["2026-05-12","12:00","13:30","Invest","Belo Frederico","Amphi MBA70","#5"],
+  ["2026-05-12","14:00","15:30","CI","Carmon Ziv","Amphi deVitry","#4"],
+  ["2026-05-12","15:45","17:15","Story","Flaven G. / Le Menestrel M.","Amphi DeanBerry","#2"],
+  ["2026-05-12","17:30","19:00","Story","Flaven G. / Le Menestrel M.","Amphi DeanBerry","#3"],
+  ["2026-05-13","08:30","10:00","ACF","Peress Joël","Amphi Maag","#2"],
+  ["2026-05-13","10:15","11:45","Story","Flaven G. / Le Menestrel M.","Amphi DeanBerry","#4"],
+  ["2026-05-13","12:00","13:30","Story","Flaven G. / Le Menestrel M.","Amphi DeanBerry","#5"],
+  ["2026-05-13","14:00","15:30","CI","Carmon Ziv","Amphi deVitry","#5"],
+  ["2026-05-13","15:45","17:15","Invest","Belo Frederico","Amphi MBA70","#6"],
+  ["2026-05-13","17:30","19:00","Invest","Belo Frederico","Amphi MBA70","#7"],
+  ["2026-05-14","08:30","10:00","Ethics","Petriglieri Gianpiero","Amphi Rubeli","#2"],
+  ["2026-05-14","10:15","11:45","Macro","Fatas Antonio","Amphi Rubeli","#5"],
+  ["2026-05-15","08:30","10:00","Invest","Belo Frederico","Amphi MBA70","#8"],
+  ["2026-05-15","10:15","11:45","Invest","Belo Frederico","Amphi MBA70","#9"],
+  ["2026-05-15","14:00","15:30","Story","Flaven G. / Le Menestrel M.","Amphi DeanBerry","#6"],
+  ["2026-05-15","15:45","17:15","Story","Flaven G. / Le Menestrel M.","Amphi DeanBerry","#7"],
+  ["2026-05-15","17:30","19:00","CI","Carmon Ziv","Amphi deVitry","#6"],
+  ["2026-05-18","14:00","15:30","Macro","Fatas Antonio","Amphi Rubeli","#6"],
+  ["2026-05-18","15:45","17:15","Ethics","Petriglieri Gianpiero","Amphi Rubeli","#3"],
+  ["2026-05-18","17:30","19:00","Policy","Roulet Alexandra","Amphi Rubeli","#6"],
+  ["2026-05-19","08:30","10:00","Invest","Belo Frederico","Amphi MBA70","#10"],
+  ["2026-05-19","10:15","11:45","Invest","Belo Frederico","Amphi MBA70","#11"],
+  ["2026-05-19","17:30","19:00","CI","Carmon Ziv","Amphi deVitry","#7"],
+  ["2026-05-20","10:15","11:45","Invest","Belo Frederico","Amphi MBA70","#12"],
+  ["2026-05-20","12:00","13:30","Invest","Belo Frederico","Amphi MBA70","#13"],
+  ["2026-05-20","14:00","15:30","ACF","Peress Joël","Amphi Maag","#3"],
+  ["2026-05-21","08:30","10:00","Policy","Roulet Alexandra","Amphi Rubeli","#7"],
+  ["2026-05-21","10:15","11:45","Ethics","Petriglieri Gianpiero","Amphi Rubeli","#4"],
+  ["2026-05-21","12:00","13:30","Macro","Fatas Antonio","Amphi Rubeli","#7"],
+  ["2026-05-22","09:00","11:00","Policy","Roulet Alexandra","TBA","Final Exam"],
+  ["2026-05-25","12:00","13:30","Macro","Fatas Antonio","Amphi Rubeli","#8"],
+  ["2026-05-25","17:30","19:00","PolEnv","Aggarwal Vinod","Amphi Rubeli","#1"],
+  ["2026-05-26","12:00","13:30","ACF","Peress Joël","Amphi Maag","#4"],
+  ["2026-05-27","08:30","10:00","PolEnv","Aggarwal Vinod","Amphi Rubeli","#2"],
+  ["2026-05-27","10:15","11:45","Macro","Fatas Antonio","Amphi Rubeli","#9"],
+  ["2026-05-27","14:00","15:30","Ethics","Petriglieri Gianpiero","Amphi Rubeli","#5"],
+  ["2026-05-27","15:45","17:15","Ethics","Petriglieri Gianpiero","Amphi Rubeli","#6"],
+  ["2026-05-28","08:30","10:00","ACF","Peress Joël","Amphi Maag","#5"],
+  ["2026-05-28","10:15","11:45","Invest","Belo Frederico","Amphi MBA70","#14"],
+  ["2026-05-29","14:00","15:30","Macro","Fatas Antonio","Amphi Rubeli","#10"],
+  ["2026-05-29","15:45","17:15","Ethics","Petriglieri Gianpiero","Amphi Rubeli","#7"],
+  ["2026-05-29","17:30","19:00","PolEnv","Aggarwal Vinod","Amphi Rubeli","#3"],
+  ["2026-06-01","08:30","10:00","Macro","Fatas Antonio","Amphi Rubeli","#11"],
+  ["2026-06-01","10:15","11:45","PolEnv","Aggarwal Vinod","Amphi Rubeli","#4"],
+  ["2026-06-03","08:30","10:00","ACF","Peress Joël","Amphi Maag","#6"],
+  ["2026-06-04","14:00","15:30","Macro","Fatas Antonio","Amphi Rubeli","#12"],
+  ["2026-06-04","15:45","17:15","PolEnv","Aggarwal Vinod","Amphi Rubeli","#5"],
+  ["2026-06-05","17:30","19:00","ACF","Peress Joël","Amphi Maag","#7"],
+  ["2026-06-08","10:15","11:45","PolEnv","Aggarwal Vinod","Amphi Rubeli","#6"],
+  ["2026-06-08","12:00","13:30","Macro","Fatas Antonio","Amphi Rubeli","#13"],
+  ["2026-06-09","08:30","10:00","ACF","Peress Joël","Amphi Maag","#8"],
+  ["2026-06-10","08:30","10:00","ACF","Peress Joël","Amphi Maag","#9 swap"],
+  ["2026-06-10","10:15","11:45","ACF","Peress Joël","Amphi Maag","#10 swap"],
+  ["2026-06-10","14:00","15:30","PolEnv","Aggarwal Vinod","Amphi Rubeli","#7"],
+  ["2026-06-10","15:45","17:15","Macro","Fatas Antonio","Amphi Rubeli","#14"],
+  ["2026-06-11","09:00","11:00","Macro","Fatas Antonio","TBA","Final Exam"],
+  ["2026-06-11","13:00","15:00","PolEnv","Aggarwal Vinod","TBA","Final Exam"],
+  ["2026-06-16","17:30","19:00","ACF","Peress Joël","Amphi Maag","#11"],
+  ["2026-06-17","08:30","10:00","ACF","Peress Joël","Amphi Tonia & Paul Forst","#12"],
+  ["2026-06-17","10:15","11:45","ACF","Peress Joël","Amphi Tonia & Paul Forst","#13"],
+  ["2026-06-19","17:30","19:00","ACF","Peress Joël","Amphi Maag","#14"]
+].map(e => ({ date: e[0], start: e[1], end: e[2], course: e[3], faculty: e[4], room: e[5], session: e[6] }));
+
+const state = { view: "week", filter: new Set(Object.keys(courses)) };
+const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const START_H = 8, END_H = 19, HOUR_H = 44;
+const today = new Date().toISOString().slice(0,10);
+
+function hexA(hex, a) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+function mins(hm){ const [h,m]=hm.split(":").map(Number); return (h-START_H)*60+m; }
+function fmtDateISO(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+
+function renderLegend(){
+  const el = document.getElementById("legend");
+  el.innerHTML = "";
+  Object.entries(courses).forEach(([key, c]) => {
+    const item = document.createElement("div");
+    item.className = "legend-item" + (state.filter.has(key) ? "" : " muted");
+    item.innerHTML = `<span class="legend-dot" style="background:${c.color}"></span><span>${c.name}</span>`;
+    item.onclick = () => {
+      if (state.filter.has(key)) state.filter.delete(key);
+      else state.filter.add(key);
+      render();
+    };
+    el.appendChild(item);
+  });
+}
+
+function renderWeekView(){
+  const cal = document.getElementById("calendar");
+  cal.innerHTML = "";
+  const weeks = [
+    { label: "Week 1 · May 4 – 10",   start: new Date(2026,4,4) },
+    { label: "Week 2 · May 11 – 17",  start: new Date(2026,4,11) },
+    { label: "Week 3 · May 18 – 24",  start: new Date(2026,4,18) },
+    { label: "Week 4 · May 25 – 31",  start: new Date(2026,4,25) },
+    { label: "Week 5 · Jun 1 – 7",    start: new Date(2026,5,1) },
+    { label: "Week 6 · Jun 8 – 14",   start: new Date(2026,5,8) },
+    { label: "Week 7 · Jun 15 – 21",  start: new Date(2026,5,15) }
+  ];
+  const totalH = (END_H - START_H) * HOUR_H + 20;
+
+  weeks.forEach(w => {
+    const section = document.createElement("div");
+    section.className = "week-section";
+    section.innerHTML = `<div class="week-label">${w.label}</div>`;
+
+    // day header
+    const dh = document.createElement("div");
+    dh.className = "day-header-row";
+    dh.innerHTML = "<div></div>";
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(w.start); d.setDate(d.getDate()+i);
+      const iso = fmtDateISO(d);
+      const weekend = i >= 5 ? " weekend" : "";
+      const isToday = iso === today ? " today" : "";
+      dh.innerHTML += `<div class="day-head${weekend}${isToday}"><div class="day-name">${DAYS[i]}</div><div class="day-num">${d.getDate()}</div></div>`;
+    }
+    section.appendChild(dh);
+
+    // grid
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    grid.style.height = totalH + "px";
+
+    // time col
+    let tcHTML = '<div class="time-col">';
+    for (let h = START_H; h <= END_H; h++) {
+      tcHTML += `<div class="time-label" style="top:${(h-START_H)*HOUR_H}px">${h}:00</div>`;
+    }
+    tcHTML += '</div>';
+    grid.innerHTML = tcHTML;
+
+    // day cols
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(w.start); d.setDate(d.getDate()+i);
+      const iso = fmtDateISO(d);
+      const col = document.createElement("div");
+      col.className = "day-col" + (i >= 5 ? " weekend" : "");
+
+      for (let h = START_H; h <= END_H; h++) {
+        const hl = document.createElement("div");
+        hl.className = "hour-line";
+        hl.style.top = ((h-START_H)*HOUR_H) + "px";
+        col.appendChild(hl);
+      }
+
+      events.filter(e => e.date === iso).forEach(ev => {
+        const c = courses[ev.course];
+        const top = mins(ev.start) * (HOUR_H/60);
+        const height = (mins(ev.end) - mins(ev.start)) * (HOUR_H/60) - 3;
+        const block = document.createElement("div");
+        block.className = "event" + (state.filter.has(ev.course) ? "" : " hidden");
+        block.style.cssText = `top:${top}px; height:${height}px; background:${hexA(c.color,0.12)}; border-left:2.5px solid ${c.color}; color:${c.color};`;
+        block.innerHTML = `<div class="ev-title">${c.short}</div><div class="ev-time" style="color:var(--text-2)">${ev.start}</div>${height > 40 ? `<div class="ev-faculty" style="color:var(--text-2)">${ev.faculty.split(" ")[0]}</div>` : ""}`;
+        block.onclick = () => showModal(ev);
+        col.appendChild(block);
+      });
+
+      grid.appendChild(col);
+    }
+    section.appendChild(grid);
+    cal.appendChild(section);
+  });
+}
+
+function renderMonthView(){
+  const cal = document.getElementById("calendar");
+  cal.innerHTML = "";
+
+  const months = [
+    { name: "May 2026",  year: 2026, month: 4, gridStart: new Date(2026, 3, 27), weeks: 5 },
+    { name: "June 2026", year: 2026, month: 5, gridStart: new Date(2026, 4, 25), weeks: 5 }
+  ];
+
+  months.forEach(m => {
+    const section = document.createElement("div");
+    section.className = "week-section";
+    section.innerHTML = `<div class="week-label">${m.name}</div>`;
+
+    const grid = document.createElement("div");
+    grid.className = "month-grid";
+    DAYS.forEach(d => {
+      const c = document.createElement("div");
+      c.className = "month-daylabel";
+      c.textContent = d;
+      grid.appendChild(c);
+    });
+
+    for (let i = 0; i < m.weeks * 7; i++) {
+      const d = new Date(m.gridStart); d.setDate(d.getDate()+i);
+      const iso = fmtDateISO(d);
+      const inMonth = d.getMonth() === m.month;
+      const cell = document.createElement("div");
+      cell.className = "month-cell" + (inMonth ? "" : " other");
+      const numClass = iso === today ? "mnum today" : "mnum";
+      cell.innerHTML = `<div class="${numClass}">${d.getDate()}</div>`;
+
+      const dayEvents = events.filter(e => e.date === iso && state.filter.has(e.course));
+      dayEvents.slice(0, 4).forEach(ev => {
+        const c = courses[ev.course];
+        const mini = document.createElement("div");
+        mini.className = "mini-event";
+        mini.style.cssText = `background:${hexA(c.color,0.15)}; color:${c.color};`;
+        mini.textContent = `${ev.start} ${c.short}`;
+        mini.onclick = (e) => { e.stopPropagation(); showModal(ev); };
+        cell.appendChild(mini);
+      });
+      if (dayEvents.length > 4) {
+        const more = document.createElement("div");
+        more.style.cssText = "font-size:9px; color:var(--text-3); padding:1px 5px;";
+        more.textContent = `+${dayEvents.length - 4} more`;
+        cell.appendChild(more);
+      }
+      grid.appendChild(cell);
+    }
+    section.appendChild(grid);
+    cal.appendChild(section);
+  });
+}
+
+function showModal(ev) {
+  const c = courses[ev.course];
+  const d = new Date(ev.date);
+  const dateStr = DAYS[(d.getDay()+6)%7] + ", " + MONTHS[d.getMonth()] + " " + d.getDate();
+  const mc = document.getElementById("modal-content");
+  mc.innerHTML = `
+    <h2><span class="course-dot" style="background:${c.color}"></span>${c.name}</h2>
+    <div class="modal-row"><span class="label">Date</span><span class="val">${dateStr}</span></div>
+    <div class="modal-row"><span class="label">Time</span><span class="val">${ev.start} – ${ev.end}</span></div>
+    <div class="modal-row"><span class="label">Faculty</span><span class="val">${ev.faculty}</span></div>
+    <div class="modal-row"><span class="label">Room</span><span class="val">${ev.room}</span></div>
+    <div class="modal-row"><span class="label">Session</span><span class="val">${ev.session}</span></div>
+    <button class="modal-close" onclick="closeModal()">Close</button>
+  `;
+  document.getElementById("modal").classList.add("open");
+}
+function closeModal(){ document.getElementById("modal").classList.remove("open"); }
+document.getElementById("modal").onclick = (e) => { if (e.target.id === "modal") closeModal(); };
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+function render() {
+  renderLegend();
+  if (state.view === "week") renderWeekView();
+  else renderMonthView();
+}
+
+document.querySelectorAll(".view-switch .btn").forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll(".view-switch .btn").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    state.view = b.dataset.view;
+    render();
+  };
+});
+
+render();
+</script>
+</body>
+</html>
