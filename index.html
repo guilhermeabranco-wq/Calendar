@@ -88,6 +88,40 @@
     .view-switch .btn.active { background: #2c2c2e; }
   }
 
+  .week-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 12px;
+  }
+  .week-nav .week-nav-label {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .week-nav .btn-nav {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    color: var(--text);
+    font: inherit;
+    font-size: 18px;
+    font-weight: 400;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .week-nav .btn-nav:hover { background: var(--hover); }
+  .week-nav .btn-nav:disabled { opacity: 0.25; cursor: default; }
+  .week-nav .btn-nav:disabled:hover { background: var(--surface); }
+
   .legend {
     display: flex;
     flex-wrap: wrap;
@@ -438,7 +472,7 @@ const events = [
   ["2026-06-19","17:30","19:00","ACF","Peress Joël","Amphi Maag","#14"]
 ].map(e => ({ date: e[0], start: e[1], end: e[2], course: e[3], faculty: e[4], room: e[5], session: e[6] }));
 
-const state = { view: "week", filter: new Set(Object.keys(courses)) };
+const state = { view: "week", filter: new Set(Object.keys(courses)), weekIdx: 0 };
 const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const START_H = 8, END_H = 19, HOUR_H = 44;
@@ -467,82 +501,102 @@ function renderLegend(){
   });
 }
 
+const weeks = [
+  { label: "Week 1 · May 4 – 10",   start: new Date(2026,4,4) },
+  { label: "Week 2 · May 11 – 17",  start: new Date(2026,4,11) },
+  { label: "Week 3 · May 18 – 24",  start: new Date(2026,4,18) },
+  { label: "Week 4 · May 25 – 31",  start: new Date(2026,4,25) },
+  { label: "Week 5 · Jun 1 – 7",    start: new Date(2026,5,1) },
+  { label: "Week 6 · Jun 8 – 14",   start: new Date(2026,5,8) },
+  { label: "Week 7 · Jun 15 – 21",  start: new Date(2026,5,15) }
+];
+
 function renderWeekView(){
   const cal = document.getElementById("calendar");
   cal.innerHTML = "";
-  const weeks = [
-    { label: "Week 1 · May 4 – 10",   start: new Date(2026,4,4) },
-    { label: "Week 2 · May 11 – 17",  start: new Date(2026,4,11) },
-    { label: "Week 3 · May 18 – 24",  start: new Date(2026,4,18) },
-    { label: "Week 4 · May 25 – 31",  start: new Date(2026,4,25) },
-    { label: "Week 5 · Jun 1 – 7",    start: new Date(2026,5,1) },
-    { label: "Week 6 · Jun 8 – 14",   start: new Date(2026,5,8) },
-    { label: "Week 7 · Jun 15 – 21",  start: new Date(2026,5,15) }
-  ];
+  const w = weeks[state.weekIdx];
   const totalH = (END_H - START_H) * HOUR_H + 20;
 
-  weeks.forEach(w => {
-    const section = document.createElement("div");
-    section.className = "week-section";
-    section.innerHTML = `<div class="week-label">${w.label}</div>`;
+  // Navigation bar
+  const nav = document.createElement("div");
+  nav.className = "week-nav";
+  const prevBtn = document.createElement("button");
+  prevBtn.className = "btn-nav";
+  prevBtn.innerHTML = "&#8249;";
+  prevBtn.disabled = state.weekIdx === 0;
+  prevBtn.onclick = () => { state.weekIdx--; render(); };
+  const nextBtn = document.createElement("button");
+  nextBtn.className = "btn-nav";
+  nextBtn.innerHTML = "&#8250;";
+  nextBtn.disabled = state.weekIdx === weeks.length - 1;
+  nextBtn.onclick = () => { state.weekIdx++; render(); };
+  const label = document.createElement("span");
+  label.className = "week-nav-label";
+  label.textContent = w.label;
+  nav.appendChild(prevBtn);
+  nav.appendChild(label);
+  nav.appendChild(nextBtn);
+  cal.appendChild(nav);
 
-    // day header
-    const dh = document.createElement("div");
-    dh.className = "day-header-row";
-    dh.innerHTML = "<div></div>";
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(w.start); d.setDate(d.getDate()+i);
-      const iso = fmtDateISO(d);
-      const weekend = i >= 5 ? " weekend" : "";
-      const isToday = iso === today ? " today" : "";
-      dh.innerHTML += `<div class="day-head${weekend}${isToday}"><div class="day-name">${DAYS[i]}</div><div class="day-num">${d.getDate()}</div></div>`;
-    }
-    section.appendChild(dh);
+  const section = document.createElement("div");
+  section.className = "week-section";
 
-    // grid
-    const grid = document.createElement("div");
-    grid.className = "grid";
-    grid.style.height = totalH + "px";
+  // day header
+  const dh = document.createElement("div");
+  dh.className = "day-header-row";
+  dh.innerHTML = "<div></div>";
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(w.start); d.setDate(d.getDate()+i);
+    const iso = fmtDateISO(d);
+    const weekend = i >= 5 ? " weekend" : "";
+    const isToday = iso === today ? " today" : "";
+    dh.innerHTML += `<div class="day-head${weekend}${isToday}"><div class="day-name">${DAYS[i]}</div><div class="day-num">${d.getDate()}</div></div>`;
+  }
+  section.appendChild(dh);
 
-    // time col
-    let tcHTML = '<div class="time-col">';
+  // grid
+  const grid = document.createElement("div");
+  grid.className = "grid";
+  grid.style.height = totalH + "px";
+
+  // time col
+  let tcHTML = '<div class="time-col">';
+  for (let h = START_H; h <= END_H; h++) {
+    tcHTML += `<div class="time-label" style="top:${(h-START_H)*HOUR_H}px">${h}:00</div>`;
+  }
+  tcHTML += '</div>';
+  grid.innerHTML = tcHTML;
+
+  // day cols
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(w.start); d.setDate(d.getDate()+i);
+    const iso = fmtDateISO(d);
+    const col = document.createElement("div");
+    col.className = "day-col" + (i >= 5 ? " weekend" : "");
+
     for (let h = START_H; h <= END_H; h++) {
-      tcHTML += `<div class="time-label" style="top:${(h-START_H)*HOUR_H}px">${h}:00</div>`;
+      const hl = document.createElement("div");
+      hl.className = "hour-line";
+      hl.style.top = ((h-START_H)*HOUR_H) + "px";
+      col.appendChild(hl);
     }
-    tcHTML += '</div>';
-    grid.innerHTML = tcHTML;
 
-    // day cols
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(w.start); d.setDate(d.getDate()+i);
-      const iso = fmtDateISO(d);
-      const col = document.createElement("div");
-      col.className = "day-col" + (i >= 5 ? " weekend" : "");
+    events.filter(e => e.date === iso).forEach(ev => {
+      const c = courses[ev.course];
+      const top = mins(ev.start) * (HOUR_H/60);
+      const height = (mins(ev.end) - mins(ev.start)) * (HOUR_H/60) - 3;
+      const block = document.createElement("div");
+      block.className = "event" + (state.filter.has(ev.course) ? "" : " hidden");
+      block.style.cssText = `top:${top}px; height:${height}px; background:${hexA(c.color,0.12)}; border-left:2.5px solid ${c.color}; color:${c.color};`;
+      block.innerHTML = `<div class="ev-title">${c.short}</div><div class="ev-time" style="color:var(--text-2)">${ev.start}</div>${height > 40 ? `<div class="ev-faculty" style="color:var(--text-2)">${ev.faculty.split(" ")[0]}</div>` : ""}`;
+      block.onclick = () => showModal(ev);
+      col.appendChild(block);
+    });
 
-      for (let h = START_H; h <= END_H; h++) {
-        const hl = document.createElement("div");
-        hl.className = "hour-line";
-        hl.style.top = ((h-START_H)*HOUR_H) + "px";
-        col.appendChild(hl);
-      }
-
-      events.filter(e => e.date === iso).forEach(ev => {
-        const c = courses[ev.course];
-        const top = mins(ev.start) * (HOUR_H/60);
-        const height = (mins(ev.end) - mins(ev.start)) * (HOUR_H/60) - 3;
-        const block = document.createElement("div");
-        block.className = "event" + (state.filter.has(ev.course) ? "" : " hidden");
-        block.style.cssText = `top:${top}px; height:${height}px; background:${hexA(c.color,0.12)}; border-left:2.5px solid ${c.color}; color:${c.color};`;
-        block.innerHTML = `<div class="ev-title">${c.short}</div><div class="ev-time" style="color:var(--text-2)">${ev.start}</div>${height > 40 ? `<div class="ev-faculty" style="color:var(--text-2)">${ev.faculty.split(" ")[0]}</div>` : ""}`;
-        block.onclick = () => showModal(ev);
-        col.appendChild(block);
-      });
-
-      grid.appendChild(col);
-    }
-    section.appendChild(grid);
-    cal.appendChild(section);
-  });
+    grid.appendChild(col);
+  }
+  section.appendChild(grid);
+  cal.appendChild(section);
 }
 
 function renderMonthView(){
@@ -618,7 +672,13 @@ function showModal(ev) {
 }
 function closeModal(){ document.getElementById("modal").classList.remove("open"); }
 document.getElementById("modal").onclick = (e) => { if (e.target.id === "modal") closeModal(); };
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeModal();
+  if (state.view === "week") {
+    if (e.key === "ArrowLeft" && state.weekIdx > 0) { state.weekIdx--; render(); }
+    if (e.key === "ArrowRight" && state.weekIdx < weeks.length - 1) { state.weekIdx++; render(); }
+  }
+});
 
 function render() {
   renderLegend();
