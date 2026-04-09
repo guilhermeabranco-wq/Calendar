@@ -368,7 +368,7 @@
 <div id="calendar"></div>
 
 <footer>
-  82 sessions · 9 courses · Click any event for details · Click course dots to filter
+  96 sessions · 10 courses · Click any event for details · Click course dots to filter
 </footer>
 
 <div class="modal-bg" id="modal">
@@ -385,7 +385,8 @@ const courses = {
   CI:     { name: "Customer Insight",                      short: "Cust. Ins.",  color: "#FF453A" },
   ACF:    { name: "Applied Corporate Finance",             short: "ACF",         color: "#5E5CE6" },
   Story:  { name: "Storytelling",                          short: "Storytelling",color: "#FF6482" },
-  AoC:    { name: "The Art of Communication",              short: "Art of Comm", color: "#64D2FF" }
+  AoC:    { name: "The Art of Communication",              short: "Art of Comm", color: "#64D2FF" },
+  SII:    { name: "Strategy and Investing for Impact",    short: "SII",         color: "#00C7BE" }
 };
 
 const events = [
@@ -403,8 +404,8 @@ const events = [
   ["2026-05-08","08:30","10:00","Macro","Fatas Antonio","Amphi Rubeli","#3"],
   ["2026-05-08","10:15","11:45","Policy","Roulet Alexandra","Amphi Rubeli","#3"],
   ["2026-05-08","12:00","13:30","Story","Flaven G. / Le Menestrel M.","Amphi DeanBerry","#1"],
-  ["2026-05-09","09:00","18:00","AoC","Knight Stephen","Amphi Maag","Day 1"],
-  ["2026-05-10","08:30","18:00","AoC","Knight Stephen","Amphi Maag","Day 2"],
+  ["2026-05-23","09:00","18:00","AoC","Knight Stephen","Amphi Maag","Day 1"],
+  ["2026-05-24","08:30","18:00","AoC","Knight Stephen","Amphi Maag","Day 2"],
   ["2026-05-11","08:30","10:00","Policy","Roulet Alexandra","Amphi Rubeli","#4"],
   ["2026-05-11","10:15","11:45","Macro","Fatas Antonio","Amphi Rubeli","#4"],
   ["2026-05-11","12:00","13:30","Ethics","Petriglieri Gianpiero","Amphi Rubeli","#1"],
@@ -469,13 +470,27 @@ const events = [
   ["2026-06-16","17:30","19:00","ACF","Peress Joël","Amphi Maag","#11"],
   ["2026-06-17","08:30","10:00","ACF","Peress Joël","Amphi Tonia & Paul Forst","#12"],
   ["2026-06-17","10:15","11:45","ACF","Peress Joël","Amphi Tonia & Paul Forst","#13"],
-  ["2026-06-19","17:30","19:00","ACF","Peress Joël","Amphi Maag","#14"]
+  ["2026-06-19","17:30","19:00","ACF","Peress Joël","Amphi Maag","#14"],
+  ["2026-06-03","10:15","11:45","SII","Singh Jasjit","Amphi Rubeli","#1"],
+  ["2026-06-03","12:00","13:30","SII","Singh Jasjit","Amphi Rubeli","#2"],
+  ["2026-06-04","17:30","19:00","SII","Singh Jasjit","Amphi Rubeli","#3"],
+  ["2026-06-04","19:15","20:45","SII","Singh Jasjit","Amphi Rubeli","#4"],
+  ["2026-06-05","08:30","10:00","SII","Singh Jasjit","Amphi Rubeli","#5"],
+  ["2026-06-05","10:15","11:45","SII","Singh Jasjit","Amphi Rubeli","#6"],
+  ["2026-06-09","15:45","17:15","SII","Singh Jasjit","Amphi Rubeli","#7"],
+  ["2026-06-09","17:30","19:00","SII","Singh Jasjit","Amphi Rubeli","#8"],
+  ["2026-06-12","14:00","15:30","SII","Singh Jasjit","Amphi BCG","#9"],
+  ["2026-06-12","15:45","17:15","SII","Singh Jasjit","Amphi BCG","#10"],
+  ["2026-06-16","14:00","15:30","SII","Singh Jasjit","Amphi Rubeli","#11"],
+  ["2026-06-16","15:45","17:15","SII","Singh Jasjit","Amphi Rubeli","#12"],
+  ["2026-06-18","08:30","10:00","SII","Singh Jasjit","Amphi Rubeli","#13"],
+  ["2026-06-18","10:15","11:45","SII","Singh Jasjit","Amphi Rubeli","#14"]
 ].map(e => ({ date: e[0], start: e[1], end: e[2], course: e[3], faculty: e[4], room: e[5], session: e[6] }));
 
 const state = { view: "week", filter: new Set(Object.keys(courses)), weekIdx: 0 };
 const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const START_H = 8, END_H = 19, HOUR_H = 44;
+const START_H = 8, END_H = 21, HOUR_H = 44;
 const today = new Date().toISOString().slice(0,10);
 
 function hexA(hex, a) {
